@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <title>Menus</title>
+</head>
+<body>
+    <script type='text/javascript'>
+        const {remote} = require('electron')
+        const {Tray, Menu} = remote
+        const path = require('path')
+
+        let trayIcon = new Tray(path.join('', '/home/cameron/Desktop/icon.png'))
+
+        const trayMenuTemplate = [
+            {
+                label: 'Empty App',
+                enabled: false
+            },
+            {
+                label: 'Settings',
+                click: () => {
+                    console.log('clicked')
+                }
+            },
+            {
+                label: 'Help',
+                click: () => {
+                    console.log('help')
+                }
+            }
+        ]
+
+        let trayMenu = Menu.buildFromTemplate(trayMenuTemplate)
+        trayIcon.setContextMenu(trayMenu)
+    </script>
+</body>
+</html>

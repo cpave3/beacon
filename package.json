@@ -1,0 +1,19 @@
+{
+  "name": "beacon-app",
+  "version": "1.0.0",
+  "description": "Control you status lights",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^1.8.4",
+    "preferences": "^1.0.2",
+    "serialport": "^6.1.1"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^1.7.3"
+  }
+}
