@@ -10,37 +10,43 @@ const statuses = {
     'available': {
         label: 'Available',
         icon: 'img/circle-green-6.png',
-        color: '0,255,0',
+        color: [0, 255, 0],
+        mode: 0,
         index: 0,
     },
     'busy': {
         label: 'Busy',
         icon: 'img/circle-red-6.png',
-        color: '255,0,0',
+        color: [255, 0, 0],
+        mode: 0,
         index: 1,
     },
     'standby': {
         label: 'Disconnected',
         icon: 'img/circle-cyan-6.png',
-        color: '0,255,255:1',
+        color: [0, 255, 255],
+        mode: 1,
         index: 0,
     },
     'away': {
         label: 'Away',
         icon: 'img/circle-orange-6.png',
-        color: '255,50,0',
+        color: [255, 50, 0],
+        mode: 0,
         index: 2,
     },
     'personal': {
         label: 'Personal',
         icon: 'img/circle-blue-6.png',
-        color: '0,255,255:1',
+        color: [0, 0, 255],
+        mode: 0,
         index: 3,
     }
 }
 const pref = new Preferences('com.bytedriven.beacon', {})
 const devices = {}
 
+let brightness = pref.brightness || 100
 let trayMenuTemplate
 let boolConnected = false
 let win // window
@@ -49,7 +55,7 @@ let tray //tray object
 let trayMenu
 let port //serial port object
 let device //string of device name
-
+console.log(pref)
 /*
 if (!pref.device) {
     port = new SerialPort('/dev/ttyACM0', {baudRate: 9600})
@@ -65,7 +71,7 @@ function createTray() {
                 type: 'radio',
                 checked: true,
                 label: 'Disconnected',
-                click: closeConnection
+                click: () => {closeConnection(true)}
             },
             {role:'separator'},
         ]
@@ -77,7 +83,7 @@ function createTray() {
         data.forEach((row) => {
             devices[i] = row
             i++
-            objectSettings.submenu.push({type: 'radio', label: row.comName, checked: false, click: () => {setDevice(row.comName)}})
+            objectSettings.submenu.push({type: 'radio', label: row.comName, checked: (pref.device != null && row.comName == pref.device), click: () => {setDevice(row.comName)}})
         })
         //console.log(`[*] Built port menu: ${objectSettings}`);
     })
@@ -89,6 +95,18 @@ function createTray() {
             { type: 'radio', label: 'Away', enabled: boolConnected, click: () => {setStatus('away')} },
             { type: 'radio', label: 'Personal', enabled: boolConnected, click: () => {setStatus('personal')} },
             {role:'separator'},
+            { label: 'Brightness', submenu: [
+                { type: 'radio', label: '10%', checked: (brightness == 10), click: () => {setBrightness(10)} },
+                { type: 'radio', label: '20%', checked: (brightness == 20), click: () => {setBrightness(20)} },
+                { type: 'radio', label: '30%', checked: (brightness == 30), click: () => {setBrightness(30)} },
+                { type: 'radio', label: '40%', checked: (brightness == 40), click: () => {setBrightness(40)} },
+                { type: 'radio', label: '50%', checked: (brightness == 50), click: () => {setBrightness(50)} },
+                { type: 'radio', label: '60%', checked: (brightness == 60), click: () => {setBrightness(60)} },
+                { type: 'radio', label: '70%', checked: (brightness == 70), click: () => {setBrightness(70)} },
+                { type: 'radio', label: '80%', checked: (brightness == 80), click: () => {setBrightness(80)} },
+                { type: 'radio', label: '90%', checked: (brightness == 90), click: () => {setBrightness(90)} },
+                { type: 'radio', label: '100%', checked: (brightness == 100), click: () => {setBrightness(100)} },
+            ] },
             objectSettings, 
             {
                 label: 'Exit',
@@ -102,6 +120,11 @@ function createTray() {
             currentStatus === 'busy' ? setStatus('available') : setStatus('busy')
         }) 
     })
+    .then(() => {
+        if (pref.device != null) {
+            setTimeout(setDevice(pref.device), 1000)
+        }
+    })
     .catch(err => console.log(err));
 }
 
@@ -110,13 +133,22 @@ function exitApplication() {
     app.quit()
 }
 
-function closeConnection() {
+function closeConnection(forget = false) {
     if (boolConnected) {
         setStatus('standby')
         boolConnected = false
+        if (forget) { 
+            pref.device = null
+        }
         port.close()
         refreshMenu()
     }
+}
+
+function setBrightness(value) {
+    brightness = value
+    pref.brightness = brightness
+    setStatus(currentStatus)
 }
 
 function setDevice(name) {
@@ -132,17 +164,20 @@ function setDevice(name) {
 }
 
 function setStatus(status) {
-    //console.log(`conn: ${boolConnected}, port: ${port}`)
+    console.log(`conn: ${boolConnected}, port: ${port}`)
     if (boolConnected && port) {
         currentStatus = status
         const objectStatus = statuses[status]
         //console.log(objectStatus)
         tray.setImage(objectStatus.icon)
-        port.write(objectStatus.color, (err) => {
+        const arrayBrightAdjusted = objectStatus.color.map(x => (x / 100) * brightness)
+        const stringColor = arrayBrightAdjusted.join(',')
+        const serialCommand = [stringColor, objectStatus.mode].join(':')
+        port.write(serialCommand, (err) => {
             if (err) {
                 console.log(err)
             }
-            //port.on('data', data => console.log(data))
+            port.on('data', data => console.log(data))
         })
         if (objectStatus.index != null) {
             trayMenu.items[objectStatus.index].checked = true
