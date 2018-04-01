@@ -2,7 +2,7 @@
   "name": "status-beacon",
   "version": "0.1.0",
   "description": "Control USB connected status lights",
-  "main": "./app/main.js",
+  "main": "./main.js",
   "scripts": {
     "start": "electron main.js",
     "rebuild": "electron-rebuild",
@@ -25,7 +25,6 @@
   "devDependencies": {
     "electron": "^1.8.4",
     "electron-builder": "^20.8.1",
-    "electron-packager": "^11.2.0",
     "electron-rebuild": "^1.7.3"
   }
 }
