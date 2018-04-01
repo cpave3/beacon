@@ -1,19 +1,31 @@
 {
-  "name": "beacon-app",
-  "version": "1.0.0",
-  "description": "Control you status lights",
-  "main": "main.js",
+  "name": "status-beacon",
+  "version": "0.1.0",
+  "description": "Control USB connected status lights",
+  "main": "./app/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron main.js",
+    "rebuild": "electron-rebuild",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
-  "author": "",
+  "author": "Cameron Pavey <cpave3@gmail.com>",
   "license": "ISC",
+  "build": {
+    "appId": "com.bytedriven.beacon",
+    "mac": {
+        "category": "public.app-category.productivity"
+    }
+  },
   "dependencies": {
-    "electron": "^1.8.4",
     "preferences": "^1.0.2",
     "serialport": "^6.1.1"
   },
   "devDependencies": {
+    "electron": "^1.8.4",
+    "electron-builder": "^20.8.1",
+    "electron-packager": "^11.2.0",
     "electron-rebuild": "^1.7.3"
   }
 }

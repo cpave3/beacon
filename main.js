@@ -6,43 +6,7 @@ const path = require('path')
 const SerialPort = require('serialport')
 const Preferences = require('preferences')
 
-const statuses = {
-    'available': {
-        label: 'Available',
-        icon: 'img/circle-green-8.png',
-        color: [0, 255, 0],
-        mode: 0,
-        index: 0,
-    },
-    'busy': {
-        label: 'Busy',
-        icon: 'img/circle-red-8.png',
-        color: [255, 0, 0],
-        mode: 0,
-        index: 1,
-    },
-    'standby': {
-        label: 'Disconnected',
-        icon: 'img/circle-cyan-8.png',
-        color: [0, 255, 255],
-        mode: 1,
-        index: 0,
-    },
-    'away': {
-        label: 'Away',
-        icon: 'img/circle-orange-8.png',
-        color: [255, 50, 0],
-        mode: 0,
-        index: 2,
-    },
-    'personal': {
-        label: 'Personal',
-        icon: 'img/circle-blue-8.png',
-        color: [0, 0, 255],
-        mode: 0,
-        index: 3,
-    }
-}
+const statuses = require('./app/src/statuses.js')
 const pref = new Preferences('com.bytedriven.beacon', {})
 const devices = {}
 
@@ -55,13 +19,6 @@ let tray //tray object
 let trayMenu
 let port //serial port object
 let device //string of device name
-console.log(pref)
-/*
-if (!pref.device) {
-    port = new SerialPort('/dev/ttyACM0', {baudRate: 9600})
-    console.log('port ', port)
-}
-*/
 
 function createTray() {
     const objectSettings = {
@@ -85,10 +42,9 @@ function createTray() {
             i++
             objectSettings.submenu.push({type: 'radio', label: row.comName, checked: (pref.device != null && row.comName == pref.device), click: () => {setDevice(row.comName)}})
         })
-        //console.log(`[*] Built port menu: ${objectSettings}`);
     })
     .then(() => {
-        tray = new Tray(path.join('', 'img/circle-cyan-8.png'))
+        tray = new Tray(path.join('', 'app/img/circle-cyan-8.png'))
         trayMenuTemplate = [
             { type: 'radio', label: 'Available', enabled: boolConnected, click: () => {setStatus('available')} },
             { type: 'radio', label: 'Busy', enabled: boolConnected, click: () => {setStatus('busy')} },
@@ -122,7 +78,11 @@ function createTray() {
     })
     .then(() => {
         if (pref.device != null) {
-            setTimeout(setDevice(pref.device), 1000)
+            objectSettings.submenu.forEach((row) => {
+                if (row.label === pref.device) {
+                    setTimeout(() => {setDevice(pref.device)}, 1000)
+                }
+            })
         }
     })
     .catch(err => console.log(err));
@@ -153,7 +113,6 @@ function setBrightness(value) {
 
 function setDevice(name) {
     pref.device = name
-    //console.log(name)
     if (pref.device) {
         port = new SerialPort(pref.device, {
             baudRate: 9600
@@ -164,27 +123,32 @@ function setDevice(name) {
 }
 
 function setStatus(status) {
-    console.log(`conn: ${boolConnected}, port: ${port}`)
-    if (boolConnected && port) {
-        currentStatus = status
-        const objectStatus = statuses[status]
-        //console.log(objectStatus)
-        tray.setImage(objectStatus.icon)
-        const arrayBrightAdjusted = objectStatus.color.map(x => (x / 100) * brightness)
-        const stringColor = arrayBrightAdjusted.join(',')
-        const serialCommand = [stringColor, objectStatus.mode].join(':')
-        port.write(serialCommand, (err) => {
-            if (err) {
-                console.log(err)
+    //console.log(`conn: ${boolConnected}, port: ${port}`)
+
+    setTimeout(() => {
+        if (boolConnected && port) {
+            currentStatus = status
+            const objectStatus = statuses[status]
+            //console.log(objectStatus)
+            tray.setImage(objectStatus.icon)
+            const arrayBrightAdjusted = objectStatus.color.map(x => (x / 100) * brightness)
+            const stringColor = arrayBrightAdjusted.join(',')
+            const serialCommand = [stringColor, objectStatus.mode].join(':')
+            port.write(serialCommand, (err) => {
+                if (err) {
+                    console.log(err)
+                }
+                //port.on('data', data => console.log(data))
+            })
+            if (objectStatus.index != null) {
+                trayMenu.items[objectStatus.index].checked = true
+                tray.setTitle(objectStatus.label)
+                refreshMenu()
             }
-            port.on('data', data => console.log(data))
-        })
-        if (objectStatus.index != null) {
-            trayMenu.items[objectStatus.index].checked = true
-            tray.setTitle(objectStatus.label)
-            refreshMenu()
+            return true
         }
-    }
+        return false
+    }, 200)
 }
 
 function openConnection() {
