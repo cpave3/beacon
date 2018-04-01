@@ -9,35 +9,35 @@ const Preferences = require('preferences')
 const statuses = {
     'available': {
         label: 'Available',
-        icon: 'img/circle-green-6.png',
+        icon: 'img/circle-green-8.png',
         color: [0, 255, 0],
         mode: 0,
         index: 0,
     },
     'busy': {
         label: 'Busy',
-        icon: 'img/circle-red-6.png',
+        icon: 'img/circle-red-8.png',
         color: [255, 0, 0],
         mode: 0,
         index: 1,
     },
     'standby': {
         label: 'Disconnected',
-        icon: 'img/circle-cyan-6.png',
+        icon: 'img/circle-cyan-8.png',
         color: [0, 255, 255],
         mode: 1,
         index: 0,
     },
     'away': {
         label: 'Away',
-        icon: 'img/circle-orange-6.png',
+        icon: 'img/circle-orange-8.png',
         color: [255, 50, 0],
         mode: 0,
         index: 2,
     },
     'personal': {
         label: 'Personal',
-        icon: 'img/circle-blue-6.png',
+        icon: 'img/circle-blue-8.png',
         color: [0, 0, 255],
         mode: 0,
         index: 3,
@@ -88,7 +88,7 @@ function createTray() {
         //console.log(`[*] Built port menu: ${objectSettings}`);
     })
     .then(() => {
-        tray = new Tray(path.join('', 'img/circle-cyan-6.png'))
+        tray = new Tray(path.join('', 'img/circle-cyan-8.png'))
         trayMenuTemplate = [
             { type: 'radio', label: 'Available', enabled: boolConnected, click: () => {setStatus('available')} },
             { type: 'radio', label: 'Busy', enabled: boolConnected, click: () => {setStatus('busy')} },
@@ -181,6 +181,7 @@ function setStatus(status) {
         })
         if (objectStatus.index != null) {
             trayMenu.items[objectStatus.index].checked = true
+            tray.setTitle(objectStatus.label)
             refreshMenu()
         }
     }
