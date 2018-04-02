@@ -44,7 +44,7 @@ function createTray() {
         })
     })
     .then(() => {
-        tray = new Tray(path.join('', 'app/img/circle-cyan-8.png'))
+        tray = new Tray(path.join(__dirname, 'app/img/circle-cyan-8.png'))
         trayMenuTemplate = [
             { type: 'radio', label: 'Available', enabled: boolConnected, click: () => {setStatus('available')} },
             { type: 'radio', label: 'Busy', enabled: boolConnected, click: () => {setStatus('busy')} },
@@ -130,7 +130,7 @@ function setStatus(status) {
             currentStatus = status
             const objectStatus = statuses[status]
             //console.log(objectStatus)
-            tray.setImage(objectStatus.icon)
+            tray.setImage(path.join(__dirname, 'app/img/', objectStatus.icon))
             const arrayBrightAdjusted = objectStatus.color.map(x => (x / 100) * brightness)
             const stringColor = arrayBrightAdjusted.join(',')
             const serialCommand = [stringColor, objectStatus.mode].join(':')
