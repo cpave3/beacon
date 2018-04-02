@@ -1,14 +1,16 @@
 {
-  "name": "status-beacon",
-  "version": "0.1.0",
+  "name": "beacon",
+  "version": "0.2.0",
   "description": "Control USB connected status lights",
   "main": "./main.js",
   "scripts": {
     "start": "electron main.js",
     "rebuild": "electron-rebuild",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux",
+    "dist:all": "yarn dist:win && yarn dist:mac && yarn dist:linux"
   },
   "author": "Cameron Pavey <cpave3@gmail.com>",
   "license": "ISC",
