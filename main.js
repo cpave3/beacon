@@ -5,6 +5,7 @@ const url = require('url')
 const path = require('path')
 const SerialPort = require('serialport')
 const Preferences = require('preferences')
+const ioHook = require('iohook');
 
 const statuses = require('./app/src/statuses.js')
 const pref = new Preferences('com.bytedriven.beacon', {})
@@ -13,6 +14,8 @@ const devices = {}
 let brightness = pref.brightness || 100
 let trayMenuTemplate
 let boolConnected = false
+let boolWatchIdle = false
+let idleInterval
 let win // window
 let currentStatus = 'available'
 let tray //tray object
@@ -37,20 +40,29 @@ function createTray() {
     SerialPort.list()
     .then((data) => {
         let i = 0
+        const serialDevices = [];
         data.forEach((row) => {
-            devices[i] = row
-            i++
-            objectSettings.submenu.push({type: 'radio', label: row.comName, checked: (pref.device != null && row.comName == pref.device), click: () => {setDevice(row.comName)}})
+            //devices[i] = row
+            //i++
+            serialDevices.push({type: 'radio', label: row.comName, checked: (pref.device != null && row.comName == pref.device), click: () => {setDevice(row.comName)}})
         })
+        objectSettings.submenu.push({ label: 'Serial', submenu: serialDevices });
+    })
+    .then(() => {
+        // Get other light sources like Yeelights
     })
     .then(() => {
         tray = new Tray(path.join(__dirname, 'app/img/circle-cyan-8.png'))
         trayMenuTemplate = [
             { type: 'radio', label: 'Available', enabled: boolConnected, click: () => {setStatus('available')} },
-            { type: 'radio', label: 'Busy', enabled: boolConnected, click: () => {setStatus('busy')} },
-            { type: 'radio', label: 'Away', enabled: boolConnected, click: () => {setStatus('away')} },
-            { type: 'radio', label: 'Personal', enabled: boolConnected, click: () => {setStatus('personal')} },
-            {role:'separator'},
+            { type: 'radio', label: 'Busy',      enabled: boolConnected, click: () => {setStatus('busy')} },
+            { type: 'radio', label: 'Away',      enabled: boolConnected, click: () => {setStatus('away')} },
+            { type: 'radio', label: 'Personal',  enabled: boolConnected, click: () => {setStatus('personal')} },
+            { role:'separator' },
+            { label: 'Options', submenu: [
+                { type: 'checkbox', label: 'System Idle', checked: boolWatchIdle, click: () => {toggleWatchIdle()} }
+            ]},
+            { role: 'separator' },
             { label: 'Brightness', submenu: [
                 { type: 'radio', label: '10%', checked: (brightness == 10), click: () => {setBrightness(10)} },
                 { type: 'radio', label: '20%', checked: (brightness == 20), click: () => {setBrightness(20)} },
@@ -102,6 +114,22 @@ function closeConnection(forget = false) {
         }
         port.close()
         refreshMenu()
+    }
+}
+
+function toggleWatchIdle() {
+    // TODO: finish this
+    boolWatchIdle = !boolWatchIdle;
+
+    if (boolWatchIdle) {
+        // change based on system activity
+        ioHook.start();
+        idleInterval = setInterval(() => {
+
+        }, 1000);
+    } else {
+        // original behaviour
+        ioHook.stop();
     }
 }
 

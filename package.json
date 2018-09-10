@@ -17,10 +17,11 @@
   "build": {
     "appId": "com.bytedriven.beacon",
     "mac": {
-        "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity"
     }
   },
   "dependencies": {
+    "iohook": "^0.2.0",
     "preferences": "^1.0.2",
     "serialport": "^6.1.1"
   },
